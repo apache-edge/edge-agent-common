@@ -1,0 +1,33 @@
+name: Swift Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build and Test on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        swift: ["6.1.0"]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: vapor/swiftly-action@v0.2
+      with:
+        toolchain: ${{ matrix.swift }}
+    
+    - name: Get Swift version
+      run: swift --version
+      
+    - name: Build
+      run: swift build
+      
+    - name: Run tests
+      run: swift test
