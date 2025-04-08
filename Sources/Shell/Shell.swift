@@ -35,7 +35,6 @@ public enum Shell {
         let stdoutPipe = Pipe()
         let stderrPipe = Pipe()
         let stdoutCapture = Pipe()
-        let stderrCapture = Pipe()
 
         process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
         process.arguments = arguments
@@ -61,7 +60,6 @@ public enum Shell {
             let data = fileHandle.availableData
             if !data.isEmpty {
                 FileHandle.standardError.write(data)
-                stderrCapture.fileHandleForWriting.write(data)
             }
         }
 
@@ -76,16 +74,11 @@ public enum Shell {
 
                     // Close write handles to ensure we can read all data
                     stdoutCapture.fileHandleForWriting.closeFile()
-                    stderrCapture.fileHandleForWriting.closeFile()
 
                     if process.terminationStatus == 0 {
                         // Read captured output
                         let stdoutData = stdoutCapture.fileHandleForReading.readDataToEndOfFile()
-                        let stderrData = stderrCapture.fileHandleForReading.readDataToEndOfFile()
-
-                        // Combine stdout and stderr
-                        let combinedData = stdoutData + stderrData
-                        let output = String(data: combinedData, encoding: .utf8) ?? ""
+                        let output = String(data: stdoutData, encoding: .utf8) ?? ""
                         continuation.resume(returning: output)
                     } else {
                         continuation.resume(
